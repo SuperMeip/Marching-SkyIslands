@@ -1,4 +1,4 @@
-﻿namespace Evix {
+﻿namespace Meeptech {
 
   /// <summary>
   /// An object that can listen for global events

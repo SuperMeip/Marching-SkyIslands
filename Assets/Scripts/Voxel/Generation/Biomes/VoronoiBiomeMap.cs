@@ -1,0 +1,16 @@
+﻿using Evix.Voxel.Generation.Sources;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Evix.Voxel.Generation.Biomes {
+  public class VoronoiBiomeMap : VoxelSource {
+
+
+    protected override float getNoiseValueAt(Coordinate location) {
+      throw new NotImplementedException();
+    }
+  }
+}

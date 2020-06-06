@@ -1,4 +1,5 @@
 ﻿using Evix.Voxel;
+using Meeptech;
 using UnityEngine;
 
 namespace Evix {
@@ -42,7 +43,7 @@ namespace Evix {
       /// <summary>
       /// The world location the player has spawned at
       /// </summary>
-      public Vector3 spawnLocation {
+      public Coordinate spawnLocation {
         get;
       }
 
@@ -55,7 +56,7 @@ namespace Evix {
       /// Make this kind of event
       /// </summary>
       /// <param name="newChunkLocation"></param>
-      public SpawnEvent(Vector3 spawnLocation) {
+      public SpawnEvent(Coordinate spawnLocation) {
         this.spawnLocation = spawnLocation;
       }
     }

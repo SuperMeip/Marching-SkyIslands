@@ -2,8 +2,8 @@
 using Evix.Voxel.Collections.Storage;
 using UnityEngine;
 using System.Collections.Concurrent;
-using System;
-using System.Collections.Generic;
+using Meeptech;
+using Evix.Voxel;
 
 namespace Evix.Controllers.Unity {
 
@@ -13,9 +13,19 @@ namespace Evix.Controllers.Unity {
   public class UnityLevelController : MonoBehaviour, IObserver {
 
     /// <summary>
+    /// Player controller for player 1
+    /// </summary>
+    public UnityEvixPlayerController player1;
+
+    /// <summary>
     /// The prefab used to render a chunk in unity.
     /// </summary>
     public GameObject chunkObjectPrefab;
+
+    /// <summary>
+    /// The count of rendered chunks atm
+    /// </summary>
+    [ReadOnly] public int renderedChunksCount;
 
     /// <summary>
     /// The level this is managing
@@ -28,14 +38,9 @@ namespace Evix.Controllers.Unity {
     [HideInInspector] public bool isLoaded;
 
     /// <summary>
-    /// The count of rendered chunks atm
+    /// Chunk controllers waiting for assignement and activation
     /// </summary>
-    [ReadOnly] public int renderedChunksCount;
-
-    /// <summary>
-    /// The pool of prefabs
-    /// </summary>
-    UnityChunkController[] chunkControllerPool;
+    [HideInInspector] public ConcurrentDictionary<Vector3, bool> chunkControllerDeActivationTokens;
 
     /// <summary>
     /// Chunk controllers waiting for assignement and activation
@@ -43,15 +48,21 @@ namespace Evix.Controllers.Unity {
     ConcurrentQueue<UnityChunkController> chunkControllerActivationQueue;
 
     /// <summary>
+    /// The pool of prefabs
+    /// </summary>
+    UnityChunkController[] chunkControllerPool;
+
+    /// <summary>
     /// Used for drawing in the editor which chunks are loaded.
     /// </summary>
-    ConcurrentBag<Vector3> loadedChunkLocations;
+    ConcurrentDictionary<Vector3, bool> loadedChunkLocations;
 
 
     ///// UNITY FUNCTIONS
 
     void Update() {
       if (isLoaded) {
+        /// load new chunks
         chunkControllerActivationQueue = chunkControllerActivationQueue ?? new ConcurrentQueue<UnityChunkController>();
         if (chunkControllerActivationQueue.Count > 0 && chunkControllerActivationQueue.TryPeek(out UnityChunkController chunkController)) {
           World.Debugger.log($"chunkcontoller found {chunkController.name} waiting to attach and activate for chunk at: {chunkController.chunkLocation.ToString()}");
@@ -110,9 +121,11 @@ namespace Evix.Controllers.Unity {
         return;
       }      
       /// draw loaded chunks.
-      foreach (Vector3 loadedChunkLocation in loadedChunkLocations) {
         Gizmos.color = Color.white;
-        Gizmos.DrawSphere(loadedChunkLocation * Chunk.Diameter, 1);
+      foreach (var loadedChunkLocation in loadedChunkLocations) {
+        if (loadedChunkLocation.Value) {
+          Gizmos.DrawSphere(loadedChunkLocation.Key * Chunk.Diameter, 1);
+        }
       }
     }
 
@@ -126,11 +139,15 @@ namespace Evix.Controllers.Unity {
         Debug.LogError("UnityLevelController Missing chunk prefab, can't work");
       } else if (level == null) {
         Debug.LogError("No level provided by world. Did you hook this level controller up to the world controller?");
+      } else if (player1 == null) {
+        Debug.LogError("No player 1 provided by world. Did you hook this level controller up to the player controller?");
       } else {
         chunkControllerActivationQueue = new ConcurrentQueue<UnityChunkController>();
-        loadedChunkLocations = new ConcurrentBag<Vector3>();
+        chunkControllerDeActivationTokens = new ConcurrentDictionary<Vector3, bool>();
+        loadedChunkLocations = new ConcurrentDictionary<Vector3, bool>();
         chunkControllerPool = new UnityChunkController[Level<IVoxelStorage>.MeshedChunkDiameter * Level<IVoxelStorage>.MeshedChunkDiameter * level.chunkBounds.y];
-        isLoaded = true;
+
+        /// get all the chunk controllers
         for (int index = 0; index < chunkControllerPool.Length; index++) {
           // for each chunk we want to be able to render at once, create a new pooled gameobject for it with the prefab that has a unitu chunk controller on it
           GameObject chunkObject = Instantiate(chunkObjectPrefab);
@@ -144,6 +161,14 @@ namespace Evix.Controllers.Unity {
             chunkObject.SetActive(false);
           }
         }
+        isLoaded = true;
+
+        ///  activate the player controller, spawn them in the middle of the level
+        /*player1.spawn((
+          level.chunkBounds.x * Chunk.Diameter / 2,
+          level.chunkBounds.y * Chunk.Diameter / 2,
+          level.chunkBounds.z * Chunk.Diameter / 2
+        ));*/
       }
     }
 
@@ -177,28 +202,56 @@ namespace Evix.Controllers.Unity {
       switch (@event) {
         // when a player spawns in the level
         case Player.SpawnEvent pse:
-          level.initializeAround(pse.spawnLocation.toChunkLocation());
+          level.initializeAround(pse.spawnLocation / Chunk.Diameter);
           break;
         // When the player moves to a new chunk, adjust the loaded level focus
         case Player.ChangeChunkLocationEvent pccle:
           level.adjustFocusTo(pccle.newChunkLocation);
           break;
         // when the level finishes loading a chunk's mesh. Render it in world
-        case Level<VoxelDictionary>.ChunkMeshGenerationFinishedEvent lcmgfe:
+        case Level<VoxelDictionary>.ChunkMeshReadyForRenderEvent lcmrfre:
+          // first, cancel any tokens trying to de-activate the mesh already existing for this chunk.
+          if (chunkControllerDeActivationTokens.TryGetValue(lcmrfre.chunkLocation.vec3, out _)) {
+            chunkControllerDeActivationTokens.TryRemove(lcmrfre.chunkLocation.vec3, out _);
+          }
+          // don't render a chunk we already have
+          if (chunkControllerPoolAlreadyContains(lcmrfre.chunkLocation.vec3)) {
+            return;
+          }
           UnityChunkController unusedChunkController = getUnusedChunkController();
           if (unusedChunkController == null) {
-            Debug.LogError($"No free chunk controller found for {lcmgfe.chunkLocation.ToString()}");
+            Debug.LogError($"No free chunk controller found for {lcmrfre.chunkLocation.ToString()}");
           } else {
-            IVoxelChunk chunk = level.getChunk(lcmgfe.chunkLocation, true);
-            if (unusedChunkController.setChunkToRender(chunk, lcmgfe.chunkLocation.vec3)) {
+            IVoxelChunk chunk = level.getChunk(lcmrfre.chunkLocation, true);
+            if (unusedChunkController.setChunkToRender(chunk, lcmrfre.chunkLocation.vec3)) {
               chunkControllerActivationQueue.Enqueue(unusedChunkController);
             }
           }
           break;
+        // when a chunk has been loaded fully into memory.
         case Level<VoxelDictionary>.ChunkDataLoadingFinishedEvent lcdlfe:
-          loadedChunkLocations.Add(lcdlfe.chunkLocation.vec3);
+          loadedChunkLocations.TryAdd(lcdlfe.chunkLocation.vec3, true);
           break;
-        // ignore other events
+        // when a chunk is unloaded from memmory
+        case Level<VoxelDictionary>.ChunkDataUnloadingFinishedEvent lcdufe:
+          if (loadedChunkLocations.TryGetValue(lcdufe.chunkLocation.vec3, out bool isLoaded)) {
+            if (isLoaded
+              && loadedChunkLocations.TryUpdate(lcdufe.chunkLocation.vec3, false, true)
+              && loadedChunkLocations.TryRemove(lcdufe.chunkLocation.vec3, out _)
+              ) {
+              return;
+            }
+            if (!isLoaded) {
+              loadedChunkLocations.TryRemove(lcdufe.chunkLocation.vec3, out _);
+            }
+          }
+          break;
+        // if a chunk gets out of the render zone, store a deactivation token for it
+        case Level<VoxelDictionary>.ChunkOutOfRenderZoneEvent lcoorze:
+          foreach (Coordinate coordinate in lcoorze.chunkLocations) {
+            chunkControllerDeActivationTokens.TryAdd(coordinate.vec3, true);
+          }
+          break;
         default:
           return;
       }
@@ -219,6 +272,21 @@ namespace Evix.Controllers.Unity {
       }
 
       return null;
+    }
+
+    /// <summary>
+    /// Check if the chunk is already being controller by an active chunk controller
+    /// </summary>
+    /// <param name="coordinate"></param>
+    /// <returns></returns>
+    bool chunkControllerPoolAlreadyContains(Vector3 coordinate) {
+      foreach (UnityChunkController chunkController in chunkControllerPool) {
+        if (chunkController != null && !chunkController.isActive && chunkController.chunkLocation == coordinate) {
+          return true;
+        }
+      }
+
+      return false;
     }
   }
 }

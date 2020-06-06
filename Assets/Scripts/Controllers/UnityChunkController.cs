@@ -9,15 +9,15 @@ namespace Evix.Controllers.Unity {
   public class UnityChunkController : MonoBehaviour {
 
     /// <summary>
-    /// The controller for the active level.
-    /// </summary>
-    [HideInInspector] public UnityLevelController levelController;
-
-    /// <summary>
     /// The current chunk location of the chunk this gameobject is representing.
     /// </summary>
     [ReadOnly]
     public Vector3 chunkLocation;
+
+    /// <summary>
+    /// The controller for the active level.
+    /// </summary>
+    [HideInInspector] public UnityLevelController levelController;
 
     /// <summary>
     /// If this controller is being used.
@@ -55,6 +55,18 @@ namespace Evix.Controllers.Unity {
       currentChunkMesh = new UnityEngine.Mesh();
     }
 
+    void Update() {
+      if (isActive && currentChunk != null && levelController != null) {
+        levelController.chunkControllerDeActivationTokens 
+          = levelController.chunkControllerDeActivationTokens ?? new System.Collections.Concurrent.ConcurrentDictionary<Vector3, bool>();
+        if (levelController.chunkControllerDeActivationTokens.TryGetValue(chunkLocation, out _)) {
+          if (levelController.chunkControllerDeActivationTokens.TryRemove(chunkLocation, out _)) {
+            deactivateAndClear();
+          }
+        }
+      }
+    }
+
     /// <summary>
     /// Set the chunk to render. Returns true if the data was set up
     /// </summary>
@@ -63,9 +75,6 @@ namespace Evix.Controllers.Unity {
     public bool setChunkToRender(IVoxelChunk chunk, Vector3 chunkLevelLocation) {
       if (chunk.isLoaded && chunk.mesh != null && !chunk.isEmpty) {
         currentChunk = chunk;
-        if (chunkLevelLocation.Equals(new Vector3(42, 1, 55))) {
-          Debug.Log("test");
-        }
         chunkLocation = chunkLevelLocation;
         isMeshed = false;
 
@@ -80,6 +89,20 @@ namespace Evix.Controllers.Unity {
     /// </summary>
     public void setObjectActive() {
       gameObject.SetActive(true);
+    }
+
+    /// <summary>
+    /// deactivate and free up this object for use again by the level controller
+    /// </summary>
+    public void deactivateAndClear() {
+      gameObject.SetActive(false);
+      currentChunkMesh = new UnityEngine.Mesh();
+      currentChunkMesh.Clear();
+
+      currentChunk = null;
+      chunkLocation = default;
+      isMeshed = false;
+      isActive = false;
     }
 
     /// <summary>

@@ -6,6 +6,7 @@ using Evix.Voxel.Collections.Storage;
 using Evix.Voxel.Generation.Sources;
 using Evix.Voxel.Generation.Mesh;
 using UnityEngine;
+using Meeptech;
 
 namespace Evix.Voxel.Collections {
 
@@ -64,6 +65,14 @@ namespace Evix.Voxel.Collections {
     /// The current center of all loaded chunks, usually based on player location
     /// </summary>
     public Coordinate focus {
+      get;
+      protected set;
+    }
+
+    /// <summary>
+    /// If the level has been initialized
+    /// </summary>
+    public bool isInitialized {
       get;
       protected set;
     }
@@ -154,29 +163,7 @@ namespace Evix.Voxel.Collections {
       }
 
       return new Chunk(voxels, neighbors, withMeshes ? getChunkMesh(chunkLocation) : null);
-    }/*
-    public IVoxelChunk getChunk(Coordinate chunkLocation, bool withMeshes = false, bool withNeighbors = false, bool withNeighborsNeighbors = false, bool fullNeighborEncasement = false) {
-      // just get an empty chunk for this one if this is out of bounds
-      if (!chunkIsWithinLoadedBounds(chunkLocation)) {
-        return Chunk.getEmptyChunk();
-      }
-      if (chunkLocation.Equals(new Coordinate(42, 1, 55))) {
-        Debug.Log("test");
-      }
-
-      return new Chunk(
-        getChunkVoxelData(chunkLocation),
-        withNeighbors ? new IVoxelChunk[] {
-          getChunk(chunkLocation + Directions.North.Offset, withMeshes, withNeighborsNeighbors, fullNeighborEncasement),
-          getChunk(chunkLocation + Directions.East.Offset, withMeshes, withNeighborsNeighbors, fullNeighborEncasement),
-          getChunk(chunkLocation + Directions.South.Offset, withMeshes, withNeighborsNeighbors, fullNeighborEncasement),
-          getChunk(chunkLocation + Directions.West.Offset, withMeshes, withNeighborsNeighbors, fullNeighborEncasement),
-          getChunk(chunkLocation + Directions.Above.Offset, withMeshes, withNeighborsNeighbors, fullNeighborEncasement),
-          getChunk(chunkLocation + Directions.Below.Offset, withMeshes, withNeighborsNeighbors, fullNeighborEncasement)
-        } : null,
-        withMeshes ? getChunkMesh(chunkLocation) : null
-      );
-    }*/
+    }
 
     /// <summary>
     /// Set the given voxeldata to the given chunk location in this level's active storage/memmory
@@ -286,9 +273,6 @@ namespace Evix.Voxel.Collections {
     /// <param name="chunkLocation"></param>
     /// <returns></returns>
     internal IMesh generateMeshDataForChunk(Coordinate chunkLocation) {
-      if (chunkLocation.Equals(new Coordinate(42, 1, 55))) {
-        Debug.Log("test");
-      }
       IVoxelChunk chunk = getChunk(chunkLocation, false, true, true, true);
       if (!chunk.isEmpty) {
         return meshGenerator.generateMesh(chunk);
@@ -325,36 +309,10 @@ namespace Evix.Voxel.Collections {
     }
 
     /// <summary>
-    /// An event indicating a chunk has finished generating it's mesh and is ready to render
-    /// </summary>
-    public struct ChunkMeshGenerationFinishedEvent : IEvent {
-      
-      /// <summary>
-      /// The chunk location of the chunk that's finished generating it's mesh
-      /// </summary>
-      public Coordinate chunkLocation {
-        get;
-      }
-
-      /// <summary>
-      /// The name of this event
-      /// </summary>
-      public string name => "Chunk Mesh Has Finished Generating";
-
-      /// <summary>
-      /// Create a new event indicating a chunk has finished generating it's mesh
-      /// </summary>
-      /// <param name="chunkLocation"></param>
-      public ChunkMeshGenerationFinishedEvent(Coordinate chunkLocation) {
-        this.chunkLocation = chunkLocation;
-      }
-    }
-
-    /// <summary>
-    /// An event indicating a chunk has finished generating it's mesh and is ready to render
+    /// An event indicating a chunk has finished loading it's contents and is ready to mesh up.
     /// </summary>
     public struct ChunkDataLoadingFinishedEvent : IEvent {
-      
+
       /// <summary>
       /// The chunk location of the chunk that's finished generating it's mesh
       /// </summary>
@@ -365,7 +323,7 @@ namespace Evix.Voxel.Collections {
       /// <summary>
       /// The name of this event
       /// </summary>
-      public string name => "Chunk Mesh Has Finished Generating";
+      public string name => "Chunk Mesh Has Finished Loading or generating,";
 
       /// <summary>
       /// Create a new event indicating a chunk has finished generating it's mesh
@@ -373,6 +331,84 @@ namespace Evix.Voxel.Collections {
       /// <param name="chunkLocation"></param>
       public ChunkDataLoadingFinishedEvent(Coordinate chunkLocation) {
         this.chunkLocation = chunkLocation;
+      }
+    }
+
+    /// <summary>
+    /// An event indicating a chunk has finished generating or loading it's mesh and is ready to render
+    /// </summary>
+    public struct ChunkMeshReadyForRenderEvent : IEvent {
+      
+      /// <summary>
+      /// The chunk location of the chunk that's finished generating it's mesh
+      /// </summary>
+      public Coordinate chunkLocation {
+        get;
+      }
+
+      /// <summary>
+      /// The name of this event
+      /// </summary>
+      public string name => "Chunk Mesh Ready for Rendering";
+
+      /// <summary>
+      /// Create a new event indicating a chunk has finished generating it's mesh
+      /// </summary>
+      /// <param name="chunkLocation"></param>
+      public ChunkMeshReadyForRenderEvent(Coordinate chunkLocation) {
+        this.chunkLocation = chunkLocation;
+      }
+    }
+
+    /// <summary>
+    /// An event indicating a chunk has finished generating it's mesh and is ready to render
+    /// </summary>
+    public struct ChunkDataUnloadingFinishedEvent : IEvent {
+
+      /// <summary>
+      /// The chunk location of the chunk that's finished generating it's mesh
+      /// </summary>
+      public Coordinate chunkLocation {
+        get;
+      }
+
+      /// <summary>
+      /// The name of this event
+      /// </summary>
+      public string name => "Chunk data Has Finished Being saved";
+
+      /// <summary>
+      /// Create a new event indicating a chunk has finished generating it's mesh
+      /// </summary>
+      /// <param name="chunkLocation"></param>
+      public ChunkDataUnloadingFinishedEvent(Coordinate chunkLocation) {
+        this.chunkLocation = chunkLocation;
+      }
+    }
+
+    /// <summary>
+    /// An event indicating a chunk has finished generating it's mesh and is ready to render
+    /// </summary>
+    public struct ChunkOutOfRenderZoneEvent : IEvent {
+      
+      /// <summary>
+      /// The chunk location of the chunk that's finished generating it's mesh
+      /// </summary>
+      public Coordinate[] chunkLocations {
+        get;
+      }
+
+      /// <summary>
+      /// The name of this event
+      /// </summary>
+      public string name => "Chunk Mesh has exited the render area";
+
+      /// <summary>
+      /// Create a new event indicating a chunk has finished generating it's mesh
+      /// </summary>
+      /// <param name="chunkLocation"></param>
+      public ChunkOutOfRenderZoneEvent(Coordinate[] chunkLocation) {
+        this.chunkLocations = chunkLocation;
       }
     }
   }

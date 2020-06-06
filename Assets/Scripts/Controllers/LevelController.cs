@@ -1,5 +1,6 @@
 ﻿using Evix.Voxel.Collections;
 using Evix.Voxel.Collections.Storage;
+using Meeptech;
 
 namespace Evix.Controllers {
 
@@ -29,22 +30,7 @@ namespace Evix.Controllers {
     /// <param name="origin">(optional) the source of the event</param>
     public void notifyOf(IEvent @event, IObserver origin = null) {
       switch (@event) {
-        // when a player spawns in the level
-        case Player.SpawnEvent pse:
-          level.initializeAround(pse.spawnLocation.toChunkLocation());
-          break;
-        // When the player moves to a new chunk, adjust the loaded level focus
-        case Player.ChangeChunkLocationEvent pccle:
-          level.adjustFocusTo(pccle.newChunkLocation);
-          break;
-        // when the level finishes loading a chunk's mesh. Render it in world
-        case Level<VoxelDictionary>.ChunkMeshGenerationFinishedEvent lcmgfe:
-          /*World.InstanciateObject(
-            lcmgfe.chunkLocation.vec3 * Chunk.Diameter,
-            level.getChunk(lcmgfe.chunkLocation, true).mesh
-          );*/
-          break;
-        // ignore other events
+        // ignore events
         default:
           return;
       }

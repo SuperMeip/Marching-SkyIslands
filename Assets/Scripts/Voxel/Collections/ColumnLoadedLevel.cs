@@ -20,7 +20,7 @@ namespace Evix.Voxel.Collections {
     /// <summary>
     /// The maximum number of chunk load jobs that can run for one queue manager simultaniously
     /// </summary>
-    const int MaxChunkLoadingJobsCount = 30;
+    const int MaxChunkLoadingJobsCount = 10;
 
     /// <summary>
     /// The current parent job, in charge of loading the chunks in the load queue
@@ -61,6 +61,7 @@ namespace Evix.Voxel.Collections {
       meshedChunkBounds = getMeshedChunkBounds(focus);
       Coordinate[] chunksToMeshGen = Coordinate.GetAllPointsBetween(meshedChunkBounds[0], meshedChunkBounds[1]);
       addChunksToMeshGenQueue(chunksToMeshGen);
+      isInitialized = true;
     }
 
     /// <summary>
@@ -68,17 +69,24 @@ namespace Evix.Voxel.Collections {
     /// </summary>
     /// <param name="newFocus">The new focal chunkLocation</param>
     public override void adjustFocusTo(Coordinate newFocus) {
-      Coordinate[] newLoadedChunkBounds   = getLoadedChunkBounds(newFocus);
-      Coordinate[] newRenderedChunkBounds = getMeshedChunkBounds(newFocus);
-      Coordinate[] chunkColumnsToLoad     = Coordinate.GetPointDiff(newLoadedChunkBounds, loadedChunkBounds);
-      Coordinate[] chunkColumnsToUnload   = Coordinate.GetPointDiff(loadedChunkBounds, newLoadedChunkBounds);
-      Coordinate[] chunkColumnsToRender   = Coordinate.GetPointDiff(newRenderedChunkBounds, meshedChunkBounds);
-      // @TODO: chunkColumnsToDeRender
+      if (isInitialized && !newFocus.Equals(focus)) {
+        Coordinate[] newLoadedChunkBounds = getLoadedChunkBounds(newFocus);
+        Coordinate[] newMeshedChunkBounds = getMeshedChunkBounds(newFocus);
+        Coordinate[] chunkColumnsToLoad = Coordinate.GetPointDiff(newLoadedChunkBounds, loadedChunkBounds);
+        Coordinate[] chunkColumnsToUnload = Coordinate.GetPointDiff(loadedChunkBounds, newLoadedChunkBounds);
+        Coordinate[] chunkColumnsGenerateMeshesFor = Coordinate.GetPointDiff(newMeshedChunkBounds, meshedChunkBounds);
+        Coordinate[] chunkColumnsToDeRender = Coordinate.GetPointDiff(meshedChunkBounds, newMeshedChunkBounds);
 
-      // queue the collected values
-      addChunkColumnsToLoadingQueue(chunkColumnsToLoad);
-      addChunkColumnsToUnloadingQueue(chunkColumnsToUnload);
-      addChunksToMeshGenQueue(chunkColumnsToRender);
+        // update the values after getting the point diffs
+        meshedChunkBounds = newMeshedChunkBounds;
+        loadedChunkBounds = newLoadedChunkBounds;
+
+        // queue the collected values
+        addChunkColumnsToLoadingQueue(chunkColumnsToLoad);
+        addChunkColumnsToUnloadingQueue(chunkColumnsToUnload);
+        addChunksToMeshGenQueue(chunkColumnsGenerateMeshesFor);
+        alertOfChunksReadyToDeRedner(chunkColumnsToDeRender);
+      }
     }
 
     /// <summary>
@@ -144,6 +152,14 @@ namespace Evix.Voxel.Collections {
     /// <param name="chunkLocations"></param>
     protected void addChunksToMeshGenQueue(Coordinate[] chunkLocations) {
       chunkMeshGenQueueManagerJob.enQueue(chunkLocations);
+    }
+
+    /// <summary>
+    /// Send event to derender chunks out of the mesh rendering zone
+    /// </summary>
+    /// <param name="chunksToDeRender"></param>
+    protected void alertOfChunksReadyToDeRedner(Coordinate[] chunksToDeRender) {
+      World.NotifyAllOf(new ChunkOutOfRenderZoneEvent(chunksToDeRender));
     }
 
     /// <summary>
@@ -337,6 +353,7 @@ namespace Evix.Voxel.Collections {
         protected override void doWorkOnChunk(Coordinate chunkLocation) {
           jobManager.level.saveChunkDataToFile(chunkLocation);
           jobManager.level.removeChunk(chunkLocation);
+          World.NotifyAllOf(new ChunkDataUnloadingFinishedEvent(chunkLocation));
         }
       }
     }
@@ -424,7 +441,7 @@ namespace Evix.Voxel.Collections {
             IMesh mesh = jobManager.level.generateMeshDataForChunk(chunkLocation);
             if (!mesh.isEmpty && !jobManager.level.containsChunkMesh(chunkLocation)) {
               jobManager.level.setChunkMesh(chunkLocation, mesh);
-              World.NotifyAllOf(new ChunkMeshGenerationFinishedEvent(chunkLocation));
+              World.NotifyAllOf(new ChunkMeshReadyForRenderEvent(chunkLocation));
             }
           }
         }

@@ -25,7 +25,7 @@ namespace Evix.Controllers.Unity {
     // Start is called before the first frame update
     void Awake() {
       World.Current.worldController = this;
-      voxelSource = getConfiguredPlainSource();
+      voxelSource = getConfiguredWaveSource();
       World.Current.initializeTestWorld(levelController, voxelSource);
     }
 

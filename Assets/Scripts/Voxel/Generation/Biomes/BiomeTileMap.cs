@@ -3,7 +3,7 @@ using Evix.Voxel.Generation.Sources;
 using System;
 
 namespace Evix.Voxel.Generation.Biomes {
-  public class BiomeMap : VoxelSource {
+  public class BiomeTileMap : VoxelSource {
 
     /// <summary>
     /// The types of master biome tiles.
@@ -31,7 +31,7 @@ namespace Evix.Voxel.Generation.Biomes {
     /// <param name="mapSizeInChunks">the map bounds, in chunks.</param>
     /// <param name="masterBiomeResolution">The amount of master biome tiles we want across the smallest axis of the map size</param>
     /// <param name="minorBiomeVoronoiResolution">The amount of Voronoi dots to use per master biome tile for generating minorbiome tiles</param>
-    BiomeMap(int seed, Coordinate mapSizeInChunks, int masterBiomeResolution = 7, int minorBiomeVoronoiResolution = 15, int baseBorderChunks = 2) : base(seed) {
+    BiomeTileMap(int seed, Coordinate mapSizeInChunks, int masterBiomeResolution = 7, int minorBiomeVoronoiResolution = 15, int baseBorderChunks = 2) : base(seed) {
       chunkBorderThicknesses = new int[Directions.Cardinal.Length];
       // the master tile map has a border, this is to keep the tiles square even on an odd count map, and to guarentee coastlines.
       Coordinate masterTileMapSize = mapSizeInChunks - (baseBorderChunks * 2);

@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Evix.Controllers.Unity;
 using MeepTech;
+using Meeptech;
 
 namespace Evix {
 
@@ -33,7 +34,7 @@ namespace Evix {
     /// <summary>
     /// the players in this world
     /// </summary>
-    public Player[] players {
+    public static Player[] players {
       get;
       private set;
     }
@@ -83,15 +84,15 @@ namespace Evix {
       );
 
       Coordinate spawn = (
-        chunkBounds.x * Chunk.Diameter / 2,
-        chunkBounds.y * Chunk.Diameter / 2,
-        chunkBounds.z * Chunk.Diameter / 2
+        chunkBounds.x / 2,
+        chunkBounds.y / 2,
+        chunkBounds.z / 2
       );
 
       levelController.level = activeLevel;
-      levelController.initialize();
       listeningObservers.Add(levelController);
-      activeLevel.initializeAround(spawn / Chunk.Diameter);
+      levelController.initialize();
+      levelController.level.initializeAround(spawn);
     }
 
     /// <summary>
@@ -102,7 +103,7 @@ namespace Evix {
       Coordinate chunkBounds          = (10, 10, 10);
       Coordinate spawn                = (
         chunkBounds.x * Chunk.Diameter / 2,
-        5,
+        10,
         chunkBounds.x * Chunk.Diameter / 2
       );
       activeLevel                     = new ColumnLoadedLevel<VoxelDictionary>(
@@ -114,7 +115,7 @@ namespace Evix {
       levelController.level = activeLevel;
       levelController.initialize();
       listeningObservers.Add(levelController);
-      activeLevel.initializeAround(spawn / Chunk.Diameter);
+      levelController.level.initializeAround(spawn);
     }
 
     /// <summary>

@@ -472,6 +472,7 @@ namespace Evix.Voxel {
   /// <summary>
   /// A block position in a level
   /// </summary>
+  [System.Serializable]
   public struct Coordinate : IComparable<Coordinate>, IEquatable<Coordinate> {
 
     /// <summary>
@@ -550,6 +551,14 @@ namespace Evix.Voxel {
       return new Coordinate(coordinates.Item1, coordinates.Item2, coordinates.Item3);
     }
 
+    /// <summary>
+    /// Turn a vector3 into a coordinate.
+    /// </summary>
+    /// <param name="coordinates"></param>
+    public static implicit operator Coordinate(Vector3 coordinate) {
+      return new Coordinate((int)coordinate.x, (int)coordinate.y, (int)coordinate.z);
+    }
+
     public static Coordinate operator +(Coordinate a, Coordinate b) {
       return (
         a.x + b.x,
@@ -601,19 +610,6 @@ namespace Evix.Voxel {
     public static Coordinate operator -(Coordinate a, int b) {
       return a + (-b);
     }
-
-    /// <summary>
-    /// The unity/world position for this level location
-    /// </summary>
-    /*public Vector3 worldPosition {
-      get {
-        return new Vector3(
-          x * Level.BLOCK_SIZE,
-          y * Level.BLOCK_SIZE,
-          z * Level.BLOCK_SIZE
-        );
-      }
-    }*/
 
     /// <summary>
     /// Get the coordinate one over in another direction.

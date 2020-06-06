@@ -1,4 +1,4 @@
-﻿namespace Evix {
+﻿namespace Meeptech {
 
   /// <summary>
   /// An event, the way observers communicate and notify eachother of changes

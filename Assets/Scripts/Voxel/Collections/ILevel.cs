@@ -21,6 +21,13 @@ namespace Evix.Voxel.Collections {
     }
 
     /// <summary>
+    /// If the level has been initialized.
+    /// </summary>
+    bool isInitialized {
+      get;
+    }
+
+    /// <summary>
     /// Get the chunk at the given location (if it's loaded)
     /// </summary>
     /// <param name="chunkLocation">the location of the chunk to grab</param>
