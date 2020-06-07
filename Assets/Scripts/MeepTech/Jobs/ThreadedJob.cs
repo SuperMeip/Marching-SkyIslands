@@ -123,12 +123,12 @@ namespace MeepTech.Jobs {
       isRunning = true;
       try {
         jobFunction();
-        // @TODO: make sure this works here:
         onFinished();
       } finally {
         finallyDo();
         isDone = true;
         isRunning = false;
+        thread.Abort();
       }
     }
 

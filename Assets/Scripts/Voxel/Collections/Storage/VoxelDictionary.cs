@@ -1,5 +1,4 @@
-﻿using Evix.Voxel;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Evix.Voxel.Collections.Storage {
@@ -12,7 +11,7 @@ namespace Evix.Voxel.Collections.Storage {
     /// <summary>
     /// if this storage set is completely full of voxels
     /// </summary>
-    public override bool isFull {
+    public bool isFull {
       get => points.Count == bounds.x * bounds.y * bounds.z;
     }
 
@@ -32,7 +31,7 @@ namespace Evix.Voxel.Collections.Storage {
     /// </summary>
     /// <param name="bounds"></param>
     public VoxelDictionary(Coordinate bounds) : base(bounds) {
-      points = new Dictionary<Coordinate, byte>(bounds.x * bounds.y * bounds.z);
+      points = new Dictionary<Coordinate, byte>();
     } //int version:
     public VoxelDictionary(int bound) : this(new Coordinate(bound)) { }
 

@@ -104,7 +104,7 @@ namespace Evix.Controllers.Unity {
       Gizmos.DrawWireCube(focalWorldPoint, new Vector3(loadedChunkDiameter, loadedChunkHeight, loadedChunkDiameter));
     }
 
-    void OnDrawGizmosSelected() {
+    void OnDrawGizmosSelected() {/*
       // ignore gizmo if we have no level to draw
       if (!isLoaded || level == null) {
         return;
@@ -113,7 +113,7 @@ namespace Evix.Controllers.Unity {
       foreach (Vector3 loadedChunkLocation in loadedChunkLocations) {
         Gizmos.color = Color.white;
         Gizmos.DrawSphere(loadedChunkLocation * Chunk.Diameter, 1);
-      }
+      }*/
     }
 
     ///// PUBLIC FUNCTIONS
@@ -185,15 +185,16 @@ namespace Evix.Controllers.Unity {
           break;
         // when the level finishes loading a chunk's mesh. Render it in world
         case Level<VoxelDictionary>.ChunkMeshGenerationFinishedEvent lcmgfe:
-          UnityChunkController unusedChunkController = getUnusedChunkController();
-          if (unusedChunkController == null) {
-            Debug.LogError($"No free chunk controller found for {lcmgfe.chunkLocation.ToString()}");
-          } else {
-            IVoxelChunk chunk = level.getChunk(lcmgfe.chunkLocation, true);
-            if (unusedChunkController.setChunkToRender(chunk, lcmgfe.chunkLocation.vec3)) {
-              chunkControllerActivationQueue.Enqueue(unusedChunkController);
-            }
-          }
+          /* UnityChunkController unusedChunkController = getUnusedChunkController();
+           if (unusedChunkController == null) {
+             Debug.LogError($"No free chunk controller found for {lcmgfe.chunkLocation.ToString()}");
+           } else {
+             IVoxelChunk chunk = level.getChunk(lcmgfe.chunkLocation, true);
+             if (unusedChunkController.setChunkToRender(chunk, lcmgfe.chunkLocation.vec3)) {
+               chunkControllerActivationQueue.Enqueue(unusedChunkController);
+             }
+           }*/
+          Debug.Log("received mesh completion event.");
           break;
         case Level<VoxelDictionary>.ChunkDataLoadingFinishedEvent lcdlfe:
           loadedChunkLocations.Add(lcdlfe.chunkLocation.vec3);

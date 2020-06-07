@@ -7,6 +7,7 @@ using MeepTech.Jobs;
 using Evix.Voxel.Generation.Mesh;
 using System.Linq;
 using System.Collections.Concurrent;
+using UnityEngine;
 
 namespace Evix.Voxel.Collections {
 
@@ -20,7 +21,7 @@ namespace Evix.Voxel.Collections {
     /// <summary>
     /// The maximum number of chunk load jobs that can run for one queue manager simultaniously
     /// </summary>
-    const int MaxChunkLoadingJobsCount = 30;
+    const int MaxChunkLoadingJobsCount = 15;
 
     /// <summary>
     /// The current parent job, in charge of loading the chunks in the load queue
@@ -57,10 +58,12 @@ namespace Evix.Voxel.Collections {
       loadedChunkBounds = getLoadedChunkBounds(focus);
       Coordinate[] chunkColumnsToLoad = Coordinate.GetAllPointsBetween(loadedChunkBounds[0].replaceY(0), loadedChunkBounds[1].replaceY(1));
       addChunkColumnsToLoadingQueue(chunkColumnsToLoad);
+      Debug.Log($"adding {chunkColumnsToLoad.Length} columns of chunks to the loading queue");
 
       meshedChunkBounds = getMeshedChunkBounds(focus);
       Coordinate[] chunksToMeshGen = Coordinate.GetAllPointsBetween(meshedChunkBounds[0], meshedChunkBounds[1]);
       addChunksToMeshGenQueue(chunksToMeshGen);
+      Debug.Log($"adding {chunksToMeshGen.Length} chunks to the meshing queue");
     }
 
     /// <summary>
@@ -68,7 +71,7 @@ namespace Evix.Voxel.Collections {
     /// </summary>
     /// <param name="newFocus">The new focal chunkLocation</param>
     public override void adjustFocusTo(Coordinate newFocus) {
-      Coordinate[] newLoadedChunkBounds   = getLoadedChunkBounds(newFocus);
+     /* Coordinate[] newLoadedChunkBounds   = getLoadedChunkBounds(newFocus);
       Coordinate[] newRenderedChunkBounds = getMeshedChunkBounds(newFocus);
       Coordinate[] chunkColumnsToLoad     = Coordinate.GetPointDiff(newLoadedChunkBounds, loadedChunkBounds);
       Coordinate[] chunkColumnsToUnload   = Coordinate.GetPointDiff(loadedChunkBounds, newLoadedChunkBounds);
@@ -77,8 +80,8 @@ namespace Evix.Voxel.Collections {
 
       // queue the collected values
       addChunkColumnsToLoadingQueue(chunkColumnsToLoad);
-      addChunkColumnsToUnloadingQueue(chunkColumnsToUnload);
-      addChunksToMeshGenQueue(chunkColumnsToRender);
+      addChunkColumnsToUnloadingQueue(chunkColumnsToUnload);*/
+      //addChunksToMeshGenQueue(chunkColumnsToRender);
     }
 
     /// <summary>

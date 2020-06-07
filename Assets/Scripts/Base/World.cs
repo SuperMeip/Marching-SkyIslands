@@ -28,7 +28,7 @@ namespace Evix {
     /// </summary>
     public static UnityDebugger Debugger {
       get;
-    } = new UnityDebugger();
+    } = new UnityDebugger(false);
 
     /// <summary>
     /// the players in this world
@@ -76,11 +76,12 @@ namespace Evix {
     public void initializeTestWorld(UnityLevelController levelController, IVoxelSource terrainSource) {
       players[0]                      = new Player();
       Coordinate chunkBounds          = (1000, 20, 1000);
-      activeLevel                     = new ColumnLoadedLevel<VoxelDictionary>(
+      activeLevel                     = new ColumnLoadedLevel<VoxelFlatArray>(
         chunkBounds,
         terrainSource,
         new MarchGenerator()
       );
+      /*
 
       Coordinate spawn = (
         chunkBounds.x * Chunk.Diameter / 2,
@@ -91,7 +92,7 @@ namespace Evix {
       levelController.level = activeLevel;
       levelController.initialize();
       listeningObservers.Add(levelController);
-      activeLevel.initializeAround(spawn / Chunk.Diameter);
+      activeLevel.initializeAround(spawn / Chunk.Diameter);*/
     }
 
     /// <summary>

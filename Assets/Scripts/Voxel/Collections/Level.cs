@@ -23,12 +23,12 @@ namespace Evix.Voxel.Collections {
     /// <summary>
     /// The width of the active chunk area in chunks
     /// </summary>
-    public const int MeshedChunkDiameter = 25;
+    public const int MeshedChunkDiameter = 15;
 
     /// <summary>
     /// The buffer diameter around rendered chunks to also load into memmory
     /// </summary>
-    public const int ChunkLoadBuffer = 15;
+    public const int ChunkLoadBuffer = 5;
 
     /// <summary>
     /// How many chunks down to load (temp);
@@ -154,29 +154,7 @@ namespace Evix.Voxel.Collections {
       }
 
       return new Chunk(voxels, neighbors, withMeshes ? getChunkMesh(chunkLocation) : null);
-    }/*
-    public IVoxelChunk getChunk(Coordinate chunkLocation, bool withMeshes = false, bool withNeighbors = false, bool withNeighborsNeighbors = false, bool fullNeighborEncasement = false) {
-      // just get an empty chunk for this one if this is out of bounds
-      if (!chunkIsWithinLoadedBounds(chunkLocation)) {
-        return Chunk.getEmptyChunk();
-      }
-      if (chunkLocation.Equals(new Coordinate(42, 1, 55))) {
-        Debug.Log("test");
-      }
-
-      return new Chunk(
-        getChunkVoxelData(chunkLocation),
-        withNeighbors ? new IVoxelChunk[] {
-          getChunk(chunkLocation + Directions.North.Offset, withMeshes, withNeighborsNeighbors, fullNeighborEncasement),
-          getChunk(chunkLocation + Directions.East.Offset, withMeshes, withNeighborsNeighbors, fullNeighborEncasement),
-          getChunk(chunkLocation + Directions.South.Offset, withMeshes, withNeighborsNeighbors, fullNeighborEncasement),
-          getChunk(chunkLocation + Directions.West.Offset, withMeshes, withNeighborsNeighbors, fullNeighborEncasement),
-          getChunk(chunkLocation + Directions.Above.Offset, withMeshes, withNeighborsNeighbors, fullNeighborEncasement),
-          getChunk(chunkLocation + Directions.Below.Offset, withMeshes, withNeighborsNeighbors, fullNeighborEncasement)
-        } : null,
-        withMeshes ? getChunkMesh(chunkLocation) : null
-      );
-    }*/
+    }
 
     /// <summary>
     /// Set the given voxeldata to the given chunk location in this level's active storage/memmory

@@ -15,12 +15,6 @@ namespace Evix.Voxel.Collections {
     public const int Diameter = 25;
 
     /// <summary>
-    /// if the chunk is solid with voxels
-    /// </summary>
-    public bool isFull
-      => voxels.isFull;
-
-    /// <summary>
     /// if this storage set is empty of voxels
     /// </summary>
     public bool isLoaded {

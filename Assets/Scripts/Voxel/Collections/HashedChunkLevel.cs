@@ -33,12 +33,8 @@ namespace Evix.Voxel.Collections {
       IVoxelSource voxelSource,
       IVoxelMeshGenerator meshGenerator
     ) : base(chunkBounds, voxelSource, meshGenerator) {
-      loadedChunks = new Dictionary<long, VoxelStorageType>(
-        chunkBounds.x * chunkBounds.y * chunkBounds.z
-      );
-      chunkMeshes = new Dictionary<long, IMesh>(
-        chunkBounds.x * chunkBounds.y * chunkBounds.z
-      );
+      loadedChunks = new Dictionary<long, VoxelStorageType>();
+      chunkMeshes = new Dictionary<long, IMesh>();
     }
 
     /// <summary>

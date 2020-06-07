@@ -5,6 +5,7 @@ using UnityEngine;
 namespace Evix.Controllers.Unity {
 
   [RequireComponent(typeof(MeshRenderer))]
+  [RequireComponent(typeof(MeshFilter))]
   [RequireComponent(typeof(MeshCollider))]
   public class UnityChunkController : MonoBehaviour {
 
@@ -52,7 +53,6 @@ namespace Evix.Controllers.Unity {
     void Awake() {
       meshFilter = GetComponent<MeshFilter>();
       meshCollider = GetComponent<MeshCollider>();
-      currentChunkMesh = new UnityEngine.Mesh();
     }
 
     /// <summary>
@@ -86,6 +86,7 @@ namespace Evix.Controllers.Unity {
     /// Update the mesh for it's assigned chunk
     /// </summary>
     public void updateMeshWithChunkData() {
+      Debug.Log("New mesh created");
       currentChunkMesh = new UnityEngine.Mesh();
       currentChunkMesh.Clear();
 
@@ -98,6 +99,12 @@ namespace Evix.Controllers.Unity {
       meshFilter.mesh = currentChunkMesh;
       meshCollider.sharedMesh = currentChunkMesh;
       isMeshed = true;
+    }
+
+    private void OnDestroy() {
+      Destroy(currentChunkMesh);
+      Destroy(meshFilter.mesh);
+      Destroy(meshCollider.sharedMesh);
     }
   }
 }
