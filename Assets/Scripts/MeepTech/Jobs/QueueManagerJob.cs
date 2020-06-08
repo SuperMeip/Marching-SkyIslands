@@ -29,8 +29,6 @@ namespace MeepTech.Jobs {
       /// <summary>
       /// Constructor
       /// </summary>
-      /// <param name="queueItem"></param>
-      /// <param name="parentCancellationSources"></param>
       protected QueueTaskChildJob(ParentQueueItemType queueItem, QueueManagerJob<ParentQueueItemType> jobManager) {
         this.queueItem = queueItem;
         this.jobManager = jobManager;
@@ -124,14 +122,16 @@ namespace MeepTech.Jobs {
     /// <param name="queueObject"></param>
     /// <param name="sortQueue">whether or not to sort the queue on add.</param>
     public void deQueue(QueueItemType[] queueObjects, bool sortQueue = true) {
-      foreach (QueueItemType queueObject in queueObjects) {
-        if (queue.Contains(queueObject)) {
-          canceledItems.TryAdd(queueObject, true);
+      if (isRunning) {
+        foreach (QueueItemType queueObject in queueObjects) {
+          if (queue.Contains(queueObject)) {
+            canceledItems.TryAdd(queueObject, true);
+          }
         }
-      }
 
-      if (sortQueue) {
-        this.sortQueue();
+        if (sortQueue) {
+          this.sortQueue();
+        }
       }
     }
 

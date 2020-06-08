@@ -160,7 +160,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 338768707}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fba2024f11dce3449a86b7b3d5b5d5e1, type: 3}
+  m_Script: {fileID: 11500000, guid: 6ddcea617e9887842881b8c8e064dca4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   chunkObjectPrefab: {fileID: 8707777211682360012, guid: 3d4597816d019cd47adcac7d52430366,
@@ -240,7 +240,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 1.5046328e-36, y: 2.7105054e-20, z: 0, w: 0}
+  m_BoundingSphereOverride: {x: -6.9e-44, y: NaN, z: 4e-44, w: 2.296e-41}
   m_UseBoundingSphereOverride: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
@@ -299,7 +299,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 893514602}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f832e2f087d70c3458ca185a81c47579, type: 3}
+  m_Script: {fileID: 11500000, guid: 9ae84fac45de58141a1d474e7a7ad946, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   levelController: {fileID: 338768709}
@@ -311,7 +311,7 @@ MonoBehaviour:
   value6: 1
   value7: 5
   value8: 10
-  SeaLevel: 25
+  SeaLevel: 125
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
